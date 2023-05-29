@@ -1,0 +1,25 @@
+import {DlReportRepo} from "./dl-report.repo";
+export class DlReportService {
+    constructor(
+        private dlRepo: DlReportRepo
+    ) {}
+    async getViewCollectionDetails (uri){
+        let client: MongoClient | null = null; // declare client variable
+        try {
+            const { uri: newConnectionString, dbName } = await this.dlRepo.parseMongoDBUri(uri);
+            client = await this.dlRepo.connectToDB(newConnectionString);
+            const db = client.db(dbName);
+            const viewCollectionName = getEnv("DL_BLOCK_DETAILS_DB_VIEW_COLLECTION_NAME")
+            const result =  await this.dlRepo.findDocuments(db, viewCollectionName);
+            return result;
+        }catch (e) {
+            this.logger.error(e)
+            return null
+        }finally {
+            if (client) {
+                await client.close();
+            }
+        }
+    }
+    
+    }
